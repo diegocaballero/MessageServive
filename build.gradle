@@ -1,0 +1,69 @@
+plugins {
+    id("com.github.johnrengelman.shadow") version "8.1.1"
+    id("io.micronaut.application") version "4.4.2"
+    id("io.micronaut.aot") version "4.4.2"
+    id('io.freefair.lombok') version '8.0.1'  // Adds Lombok support for Gradle
+
+}
+
+version = "0.1"
+group = "org.service.message"
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    annotationProcessor("io.micronaut.validation:micronaut-validation-processor")
+    implementation("io.micronaut.beanvalidation:micronaut-hibernate-validator")
+
+    implementation("io.micronaut.serde:micronaut-serde-jackson")
+    implementation("io.micronaut.aws:micronaut-function-aws")
+    implementation("io.micronaut.aws:micronaut-aws-sdk-v2")
+    implementation("software.amazon.awssdk:sns")
+    implementation("javax.validation:validation-api:2.0.1.Final")
+    implementation("io.micronaut:micronaut-http-client")
+    implementation("io.micronaut.validation:micronaut-validation")
+    implementation("org.projectlombok:lombok:1.18.28") // Lombok dependency
+    annotationProcessor("org.projectlombok:lombok:1.18.28") // Lombok annotation processor
+    runtimeOnly("ch.qos.logback:logback-classic")
+}
+
+tasks.withType(JavaCompile) {
+    options.annotationProcessorPath = configurations.annotationProcessor
+}
+
+application {
+    mainClass = "org.service.message.MessageApplication"
+}
+java {
+    sourceCompatibility = JavaVersion.toVersion("17")
+    targetCompatibility = JavaVersion.toVersion("17")
+}
+
+
+graalvmNative.toolchainDetection = false
+
+micronaut {
+    runtime("netty")
+    testRuntime("junit5")
+    processing {
+        incremental(true)
+        annotations("org.service.*")
+    }
+    aot {
+        // Please review carefully the optimizations enabled below
+        // Check https://micronaut-projects.github.io/micronaut-aot/latest/guide/ for more details
+        optimizeServiceLoading = false
+        convertYamlToJava = false
+        precomputeOperations = true
+        cacheEnvironment = true
+        optimizeClassLoading = true
+        deduceEnvironment = true
+        optimizeNetty = true
+        replaceLogbackXml = true
+    }
+}
+
+
+
